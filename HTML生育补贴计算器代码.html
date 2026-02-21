@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天门生育补贴计算器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #FFB6C1 0%, #FFA500 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .page {
+            padding: 30px 25px;
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        /* 封面页样式 */
+        .cover-page {
+            text-align: center;
+            background: linear-gradient(180deg, #FFB6C1 0%, #FFE4E1 100%);
+            color: #D2691E;
+        }
+
+        .cover-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            color: #FF6347;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #8B4513;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #A0522D;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, #FFA500, #FF8C00);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+
+        /* 选择身份页样式 */
+        .selection-page h2 {
+            text-align: center;
+            color: #8B4513;
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+
+        .identity-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .identity-card {
+            background: #FFF8DC;
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            padding: 20px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .identity-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+            background: #FFE4B5;
+        }
+
+        .identity-card.selected {
+            background: #FFD700;
+            border-color: #FFA500;
+            box-shadow: 0 5px 15px rgba(255, 165, 0, 0.3);
+        }
+
+        .identity-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+            color: #8B4513;
+        }
+
+        .identity-name {
+            font-weight: bold;
+            color: #8B4513;
+            font-size: 14px;
+        }
+
+        /* 结果页样式 */
+        .result-page {
+            text-align: center;
+        }
+
+        .result-page h2 {
+            color: #8B4513;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .subsidy-amount {
+            background: linear-gradient(90deg, #FFE4E1, #FFB6C1);
+            border-radius: 20px;
+            padding: 30px 20px;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subsidy-label {
+            font-size: 18px;
+            color: #A0522D;
+            margin-bottom: 10px;
+        }
+
+        .subsidy-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #FF4500;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subsidy-unit {
+            font-size: 20px;
+            color: #8B4513;
+            margin-left: 5px;
+        }
+
+        .spending-title {
+            color: #8B4513;
+            font-size: 18px;
+            margin: 25px 0 15px;
+            font-weight: bold;
+        }
+
+        .spending-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .spending-card {
+            background: #F5F5DC;
+            border-left: 5px solid #FFA500;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: left;
+            display: none;
+        }
+
+        .spending-card.active {
+            display: block;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .spending-card h4 {
+            color: #8B4513;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .spending-card p {
+            color: #A0522D;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: #8B4513;
+        }
+
+        .btn-secondary:hover {
+            background: #A0522D;
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes countUp {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            .page {
+                padding: 20px 15px;
+            }
+            
+            .identity-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .subsidy-number {
+                font-size: 40px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 封面页 -->
+        <div class="page cover-page active" id="page-cover">
+            <div class="cover-icon">
+                <i class="fas fa-baby-carriage"></i>
+            </div>
+            <h1 class="title">欢迎来到天门生活</h1>
+            <p class="subtitle">算一算，你的生育补贴能拿多少？</p>
+            <button class="btn" onclick="goToPage('page-select')">
+                点击开启计算
+            </button>
+        </div>
+
+        <!-- 选择身份页 -->
+        <div class="page selection-page" id="page-select">
+            <h2>请选择你的家庭身份</h2>
+            <div class="identity-grid" id="identity-grid">
+                <!-- 身份选项将通过JavaScript动态生成 -->
+            </div>
+            <button class="btn" onclick="calculateSubsidy()" id="calculate-btn" disabled>
+                计算我的补贴
+            </button>
+        </div>
+
+        <!-- 结果页 -->
+        <div class="page result-page" id="page-result">
+            <h2>天门市生育补贴计算结果</h2>
+            <div class="subsidy-amount">
+                <div class="subsidy-label">你的家庭可领取补贴总额</div>
+                <div>
+                    <span class="subsidy-number" id="subsidy-amount">0</span>
+                    <span class="subsidy-unit">元</span>
+                </div>
+            </div>
+            
+            <h3 class="spending-title">这些钱在天门可以这样花！</h3>
+            <div class="spending-options">
+                <!-- 消费建议选项将根据金额动态显示 -->
+                <div class="spending-card" id="spending-low">
+                    <h4>💰 基础消费套餐</h4>
+                    <p>• 天门新城亲子乐园半年卡<br>
+                    • 陆羽故里茶艺体验课（8次）<br>
+                    • 本地特色蒸菜全家套餐（6次）</p>
+                </div>
+                <div class="spending-card" id="spending-medium">
+                    <h4>🎁 品质生活套餐</h4>
+                    <p>• 竟陵老街文创产品精选套装<br>
+                    • 天门人民医院VIP产检服务<br>
+                    • 专业月嫂服务（15天）<br>
+                    • 家庭亲子写真套餐</p>
+                </div>
+                <div class="spending-card" id="spending-high">
+                    <h4>🌟 豪华体验套餐</h4>
+                    <p>• 天门周边亲子民宿度假（3天2晚）<br>
+                    • 儿童教育基金启动包<br>
+                    • 家庭全年健康保险<br>
+                    • 高端母婴用品礼盒套装<br>
+                    • 亲子游泳健身年卡</p>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="goToPage('page-select')">
+                    <i class="fas fa-redo"></i> 重新计算
+                </button>
+                <button class="btn" onclick="shareResult()">
+                    <i class="fas fa-share-alt"></i> 分享结果
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 补贴数据配置
+        const subsidyConfig = {
+            "unmarried": { name: "未婚", icon: "fas fa-user", amount: 5000 },
+            "married_no_kids": { name: "已婚未育", icon: "fas fa-heart", amount: 5000 },
+            "one_child": { name: "已婚一胎", icon: "fas fa-child", amount: 13000 },
+            "two_children": { name: "已婚二胎", icon: "fas fa-child", amount: 17000 },
+            "three_children": { name: "已婚三胎", icon: "fas fa-child", amount: 25000 },
+            "twins_two": { name: "二胎双胞胎", icon: "fas fa-users", amount: 27000 },
+            "twins_three": { name: "三胎双胞胎", icon: "fas fa-users", amount: 45000 },
+            "special_case": { name: "其他情况", icon: "fas fa-question-circle", amount: 3000 }
+        };
+
+        // 当前选中的身份
+        let selectedIdentity = null;
+        // 补贴金额
+        let subsidyAmount = 0;
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 生成身份选择卡片
+            const identityGrid = document.getElementById('identity-grid');
+            
+            Object.keys(subsidyConfig).forEach(key => {
+                const identity = subsidyConfig[key];
+                const card = document.createElement('div');
+                card.className = 'identity-card';
+                card.dataset.id = key;
+                card.innerHTML = `
+                    <div class="identity-icon"><i class="${identity.icon}"></i></div>
+                    <div class="identity-name">${identity.name}</div>
+                `;
+                card.onclick = () => selectIdentity(key, card);
+                identityGrid.appendChild(card);
+            });
+        });
+
+        // 选择身份
+        function selectIdentity(id, element) {
+            // 移除之前的选择状态
+            document.querySelectorAll('.identity-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // 设置新的选择状态
+            element.classList.add('selected');
+            selectedIdentity = id;
+            
+            // 启用计算按钮
+            document.getElementById('calculate-btn').disabled = false;
+        }
+
+        // 计算补贴
+        function calculateSubsidy() {
+            if (!selectedIdentity) return;
+            
+            // 获取补贴金额
+            subsidyAmount = subsidyConfig[selectedIdentity].amount;
+            
+            // 转到结果页
+            goToPage('page-result');
+            
+            // 数字动画效果
+            const amountElement = document.getElementById('subsidy-amount');
+            amountElement.textContent = '0';
+            
+            let start = 0;
+            const end = subsidyAmount;
+            const duration = 1500; // 动画持续时间（毫秒）
+            const step = Math.ceil(end / (duration / 16)); // 每帧增加的值
+            
+            function updateAmount() {
+                start += step;
+                if (start > end) start = end;
+                
+                amountElement.textContent = start.toLocaleString();
+                amountElement.style.animation = 'countUp 0.3s ease-out';
+                
+                if (start < end) {
+                    setTimeout(updateAmount, 16);
+                } else {
+                    // 动画完成后，显示对应的消费建议
+                    showSpendingOptions();
+                }
+            }
+            
+            updateAmount();
+        }
+
+        // 显示对应的消费建议
+        function showSpendingOptions() {
+            // 隐藏所有消费建议
+            document.querySelectorAll('.spending-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // 根据补贴金额显示对应的建议
+            let spendingCardId = 'spending-low';
+            if (subsidyAmount >= 15000 && subsidyAmount < 25000) {
+                spendingCardId = 'spending-medium';
+            } else if (subsidyAmount >= 25000) {
+                spendingCardId = 'spending-high';
+            }
+            
+            document.getElementById(spendingCardId).classList.add('active');
+        }
+
+        // 页面切换函数
+        function goToPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // 显示目标页面
+            document.getElementById(pageId).classList.add('active');
+            
+            // 如果返回选择页面，重置选择状态
+            if (pageId === 'page-select') {
+                selectedIdentity = null;
+                document.querySelectorAll('.identity-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.getElementById('calculate-btn').disabled = true;
+            }
+        }
+
+        // 分享结果（模拟功能）
+        function shareResult() {
+            const identityName = selectedIdentity ? subsidyConfig[selectedIdentity].name : '未知身份';
+            const message = `我在天门生育补贴计算器上测出，作为【${identityName}】家庭，可以领取${subsidyAmount.toLocaleString()}元补贴！你也来测测吧！`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '天门生育补贴计算结果',
+                    text: message,
+                    url: window.location.href
+                });
+            } else {
+                // 兼容方案：复制到剪贴板
+                navigator.clipboard.writeText(message + '\n' + window.location.href)
+                    .then(() => {
+                        alert('结果已复制到剪贴板！\n\n' + message);
+                    });
+            }
+        }
+
+        // 键盘快捷键支持
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                goToPage('page-cover');
+            }
+        });
+    </script>
+</body>
+</html>
